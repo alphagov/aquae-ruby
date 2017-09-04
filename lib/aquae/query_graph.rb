@@ -20,35 +20,40 @@ module Aquae
 
     def add_query query
       @graph.add_vertex query
+      query
     end
 
-    def add_choice source, choice
-      choice.requiredQuery.each do |query|
-        @graph.add_edge source, query
+    def add_choice choice
+      choice.required_queries.each do |required|
+        @graph.add_edge choice.query_for, required
         unless @graph.acyclic?
-          @graph.remove_edge source, query
+          @graph.remove_edge choice.query_for, required
           raise ArgumentError, "Choice would create a cycle in query graph"
         end
       end
-      @choices[source].add choice
-    end
-
-    def choices_for query
-      @choices[query]
+      @choices[choice.query_for].add choice
+      choice
     end
 
     def query_tree query
-      @graph.bfs_search_tree_from query
+      graph = @graph.bfs_search_tree_from query
+      # Make sure query is added, might not be present if
+      # query has no children
+      graph.add_vertex query
+      graph
     end
 
     def leaf_queries
       @graph.vertices_filtered_by {|v| @graph.out_degree(v) == 0 }.to_a
     end
 
+    def root_query
+      @graph.empty? ? nil : @graph.topsort_iterator.first
+    end
+
     # True if this is a query tree for a single query
     def single_query?
-      reverse = @graph.reverse
-      reverse.vertices_filtered_by {|v| reverse.out_degree(v) == 0 }.one?
+      @graph.empty? ? false : query_tree(root_query).size == @graph.size
     end
 
     # True if all the choices in this tree have been resolved
@@ -59,7 +64,7 @@ module Aquae
 
     # Splits a single query with multiple choices at different levels out
     # into multiple trees, one for each combination of queries.
-    def trees_for query
+    def to_plans query
       if @graph.out_degree(query) == 0
         # Leaf node, generate a graph of just this query
         g = self.class.new
@@ -68,45 +73,28 @@ module Aquae
       else
         @choices[query].map do |choice|
           # Get the choice trees for each req. query,
-          trees = choice.requiredQuery.map &method(:trees_for)
+          trees = choice.required_queries.map &method(:to_plans)
           # generate every possible combination of choices,
           combinations = trees.first.product *trees.drop(1)
           # and combine them all into a single graph for this choice
-          combinations
-            .map {|graphs| self.class.new *graphs }
-            .each {|graph| graph.add_choice query, choice }
+          combinations.map {|graphs| self.class.new *graphs }.each do |graph|
+            graph.add_query query
+            graph.add_choice choice
+          end
         end.flatten
       end
     end
-  end
-end
 
-if __FILE__ == $0
-  require 'rgl/dot'
-  require 'aquae/protos/metadata.pb'
-  g = Viaduct::QueryGraph.new
-  g.add_query '1'
-  g.add_query '2'
-  g.add_query '3'
-  g.add_query '4'
-  g.add_query '5'
-  g.add_query '6'
-  g.add_query '7'
-  g.add_query '0'
-  g.add_choice '1', Aquae::Metadata::Choice.new(requiredQuery: ['2', '3'])
-  g.add_choice '1', Aquae::Metadata::Choice.new(requiredQuery: ['4'])
-  g.add_choice '3', Aquae::Metadata::Choice.new(requiredQuery: ['5'])
-  g.add_choice '4', Aquae::Metadata::Choice.new(requiredQuery: ['5'])
-  g.add_choice '5', Aquae::Metadata::Choice.new(requiredQuery: ['6'])
-  g.add_choice '5', Aquae::Metadata::Choice.new(requiredQuery: ['7'])
-  g.add_choice '6', Aquae::Metadata::Choice.new(requiredQuery: ['1'])
-
-  puts "Edges:"
-  p g.graph.edges
-  p g.trees_for '1'
-  File.open('graph.dot', 'w') do |f|
-    g.trees_for('1').each do |graph|
-      graph.graph.print_dotted_on({}, f)
+    # Create a new graph from a set of queries
+    def self.populate *queries
+      graph = new
+      queries.each do |query|
+        graph.add_query query
+        query.choices.each do |choice|
+          graph.add_choice choice
+        end
+      end
+      graph
     end
   end
 end
