@@ -56,6 +56,11 @@ module Aquae
       @graph.empty? ? false : query_tree(root_query).size == @graph.size
     end
 
+    # All choices present in the graph
+    def all_choices
+      @choices.values.flat_map(&:to_a)
+    end
+
     # True if all the choices in this tree have been resolved
     # (i.e. that each query only has one choice)
     def choices_resolved?
@@ -65,24 +70,19 @@ module Aquae
     # Splits a single query with multiple choices at different levels out
     # into multiple trees, one for each combination of queries.
     def to_plans query
-      if @graph.out_degree(query) == 0
-        # Leaf node, generate a graph of just this query
-        g = self.class.new
-        g.add_query query
-        [g]
-      else
         @choices[query].map do |choice|
           # Get the choice trees for each req. query,
           trees = choice.required_queries.map &method(:to_plans)
           # generate every possible combination of choices,
-          combinations = trees.first.product *trees.drop(1)
+          # select the choice once if there are no required_queries
+          combinations = trees.any? ? trees.first.product(*trees.drop(1)) : [trees.first]
           # and combine them all into a single graph for this choice
           combinations.map {|graphs| self.class.new *graphs }.each do |graph|
             graph.add_query query
             graph.add_choice choice
           end
         end.flatten
-      end
+      # end
     end
 
     # Create a new graph from a set of queries
