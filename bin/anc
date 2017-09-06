@@ -78,6 +78,9 @@ commands.each do |command|
     when 'receive'
       node_name = args.shift
       begin
+        unless sockets.has_key? node_name
+          sockets[node_name] = endpoint.accept_messages {|s| break s if s.node.name == node_name }
+        end
         puts sockets[node_name].read.inspect
       rescue EOFError => e
         sockets.delete node_name
