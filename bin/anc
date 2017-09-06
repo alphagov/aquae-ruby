@@ -90,6 +90,8 @@ commands.each do |command|
       end
     when 'exit'
       break
+    when 'echo'
+      puts args.join ' '
     when nil
       # pass
     else
