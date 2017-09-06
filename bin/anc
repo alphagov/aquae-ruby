@@ -64,6 +64,7 @@ end
 # If user didn't specify any commands, read from STDIN
 commands = commands.empty? ? take_from_stdin : take_from_array(commands)
 sockets = Hash.new {|h, name| h[name] = connect_to.call name}
+recv = []
 
 include Aquae::Messaging
 commands.each do |command|
@@ -81,7 +82,8 @@ commands.each do |command|
         unless sockets.has_key? node_name
           sockets[node_name] = endpoint.accept_messages {|s| break s if s.node.name == node_name }
         end
-        puts sockets[node_name].read.inspect
+        recv.push sockets[node_name].read
+        puts recv.last.inspect
       rescue EOFError => e
         sockets.delete node_name
         STDERR.puts "#{node_name}: Connection closed: #{e.message}"
