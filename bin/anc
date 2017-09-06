@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require_relative '../lib/aquae/endpoint'
 require_relative '../lib/aquae/protos/metadata.pb'
+require_relative '../lib/aquae/federation'
 Recoverable = Class.new StandardError
 
 USAGE = """Usage: #{$0} node_name metadata_file key_file [-- command -- command ...]
@@ -31,9 +32,9 @@ if node_name.nil? or metadata_file.nil? or key_file.nil?
   return 1
 end
 
-metadata = Aquae::Metadata::Federation.decode File.binread metadata_file
+federation = Aquae::Federation.new Aquae::Metadata::Federation.decode File.binread metadata_file
 key = File.binread key_file
-endpoint = Aquae::Endpoint.new metadata, key, node_name
+endpoint = Aquae::Endpoint.new federation, key, federation.node(node_name)
 
 # Read commands from STDIN with a basic prompt
 def take_from_stdin
@@ -51,7 +52,7 @@ end
 
 # Closure proc to connect to a node by name
 connect_to = proc do |node_name|
-  node = metadata.node.find {|n| n.name == node_name}
+  node = federation.node node_name
   if node.nil?
     raise Recoverable.new "No node with name #{node_name}"
   else

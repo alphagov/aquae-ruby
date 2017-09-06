@@ -5,11 +5,15 @@ module Aquae
   class MessageSocket
     # Wraps an EncapsulationSocket and performs de/serialisation of messages
 
-    def initialize encapsulation_socket
+    def initialize node, encapsulation_socket
       # @param encapsulation_socket [EncapsulationSocket]
       #   An open socket which returns one message per call to read
+      @node = node
       @socket = encapsulation_socket
     end
+
+    # The node this socket is connected to
+    attr_reader :node
 
     def write message
       unless TYPES.value? message.class
