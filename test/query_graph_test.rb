@@ -1,21 +1,11 @@
 require 'test-unit'
-require_relative '../lib/aquae/query_graph'
-require_relative '../lib/aquae/query_spec'
+require_relative 'query_graph_fixture'
 
 class QueryGraphTest < Test::Unit::TestCase
-  def question_fixture name
-    Aquae::QuerySpec.new name
-  end
+  include QueryGraphFixtures
 
   def choice_for parent, *children
     Aquae::QuerySpec::Implementation.new nil, parent, children
-  end
-
-  def graph_of number
-    fixtures = number.times.map(&:to_s).map(&method(:question_fixture))
-    graph = Aquae::QueryGraph.new
-    fixtures.each &graph.method(:add_query)
-    graph
   end
 
   test 'single_query? for empty graph' do

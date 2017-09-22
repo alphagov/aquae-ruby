@@ -67,6 +67,32 @@ module Aquae
       @choices.values.map(&:size).all? {|size| size == 1 }
     end
 
+    # Returns a matching specification that contains the matching
+    # information required to run the query. Information from all
+    # present implementations will be used.
+    def matching_requirements query
+      specs = query_tree(query).vertices
+        .flat_map {|q| @choices[q].to_a }
+        .select(&:requires_matching?)
+        .map(&:required_matches)
+      combine_specs *specs
+    end
+
+    # Combine a set of matching specifications into one.
+    # - Any required field that is present will be present
+    # - Any disambiguator that is common to more than one spec is promoted to required
+    # - Any confidence builder present will be present
+    def combine_specs *specs
+      specs.reduce(Aquae::Metadata::MatchingSpec.new) do |new_spec, old_spec|
+        common_disambiguators = new_spec.disambiguators & old_spec.disambiguators
+        new_spec.required |= old_spec.required | common_disambiguators
+        new_spec.disambiguators |= old_spec.disambiguators
+        new_spec.disambiguators -= common_disambiguators
+        new_spec.confidenceBuilders |= old_spec.confidenceBuilders
+        new_spec
+      end
+    end
+
     # Splits a single query with multiple choices at different levels out
     # into multiple trees, one for each combination of queries.
     def to_plans query
