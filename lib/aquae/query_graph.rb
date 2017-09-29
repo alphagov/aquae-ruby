@@ -47,6 +47,10 @@ module Aquae
       @graph.vertices_filtered_by {|v| @graph.out_degree(v) == 0 }.to_a
     end
 
+    def required_queries query
+      @graph.adjacent_vertices(query)
+    end
+
     def root_query
       @graph.empty? ? nil : @graph.topsort_iterator.first
     end
