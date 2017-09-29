@@ -115,6 +115,10 @@ module Aquae
       # end
     end
 
+    def == other
+      other.respond_to?(:graph) && other.respond_to?(:choices) && @graph == other.graph && @choices == other.choices
+    end
+
     # Create a new graph from a set of queries
     def self.populate *queries
       graph = new
