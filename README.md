@@ -1,6 +1,6 @@
 # Aquae
 
-This gem is a low-level library for interacting with an AQuAE (Attributes, Questions, Answers and Elibility) system. It provides the APIs for opening connections and sending messages between nodes, on top of which applications can be written.
+This gem is a low-level library for interacting with an AQuAE (Attributes, Questions, Answers and Eligibility) system. It provides the APIs for opening connections and sending messages between nodes, on top of which applications can be written.
 
 To be explicit, this library provides the following:
 

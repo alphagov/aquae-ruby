@@ -4,10 +4,23 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require "aquae/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "aquae"
-  spec.version       = Aquae::VERSION
+  # Count the number of commits between us and the last release.
+  # Use this to give the Gem package a unique build number.
+  # Make sure we're in the right working-dir before doing this,
+  # so the specification is accurate when loaded in other projects.
+  *tag, count, hash, dirty = `git -C "#{File.dirname __FILE__}" describe --tags --dirty`.chomp.split('-')
+  unless dirty == 'dirty'
+    count, hash = hash, dirty
+  end
+
+  spec.name          = 'aquae'
+  # Still use Aquae::VERSION as the base version, and then add
+  # the number of commits since that release as a patch.
+  # If we're in a dirty working dir, add the dev flag.
+  spec.version       = "#{Aquae::VERSION}.#{count}#{dirty ? '.dev' : ''}"
   spec.authors       = ["Simon Worthington"]
   spec.email         = ["simon.worthington@digital.cabinet-office.gov.uk"]
+  spec.license       = 'MIT'
 
   spec.summary       = %q{Implements a protocol for personal data exchange.}
   spec.description   = <<-HEREDOC
@@ -27,16 +40,16 @@ Gem::Specification.new do |spec|
   #    "public gem pushes."
   #end
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+  spec.files         = `git -C "#{File.dirname __FILE__}" ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
-  spec.bindir        = "exe"
-  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.bindir        = 'bin'
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "protobuf", "~> 3.7.5"
+  spec.add_dependency "protobuf", "~> 3.7"
   spec.add_dependency "rgl", "~> 0.5.3"
   spec.add_development_dependency "bundler", "~> 1.15"
   spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "test-unit", "~> 3.2.3"
+  spec.add_development_dependency "test-unit", "~> 3.2"
 end
