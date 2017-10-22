@@ -12,6 +12,7 @@ Gem::Specification.new do |spec|
   unless dirty == 'dirty'
     count, hash = hash, dirty
   end
+  count = 0 if (count == '' || count.nil?)
 
   spec.name          = 'aquae'
   # Still use Aquae::VERSION as the base version, and then add
