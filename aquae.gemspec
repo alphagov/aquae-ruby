@@ -8,17 +8,17 @@ Gem::Specification.new do |spec|
   # Use this to give the Gem package a unique build number.
   # Make sure we're in the right working-dir before doing this,
   # so the specification is accurate when loaded in other projects.
-  *tag, count, hash, dirty = `git -C "#{File.dirname __FILE__}" describe --tags --dirty`.chomp.split('-')
-  unless dirty == 'dirty'
-    count, hash = hash, dirty
+  VERSION_TAG = /v\d\.\d+/
+  head    = `git -C "#{File.dirname __FILE__}" rev-parse HEAD`.chomp
+  release = `git -C "#{File.dirname __FILE__}" tag --points-at HEAD`.split("\n").any? do |tag|
+    tag =~ VERSION_TAG
   end
-  count = 0 if (count == '' || count.nil?)
 
   spec.name          = 'aquae'
   # Still use Aquae::VERSION as the base version, and then add
   # the number of commits since that release as a patch.
   # If we're in a dirty working dir, add the dev flag.
-  spec.version       = "#{Aquae::VERSION}.#{count}#{dirty ? '.dev' : ''}"
+  spec.version       = "#{Aquae::VERSION}#{release ? '' : ".pre.#{head[0..8]}"}"
   spec.authors       = ["Simon Worthington"]
   spec.email         = ["simon.worthington@digital.cabinet-office.gov.uk"]
   spec.license       = 'MIT'
@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
     connections and sending messages between nodes, on top of which applications
     can be written.
     HEREDOC
-  spec.homepage      = "https://www.github.com/alphagov/aquae-corundum"
+  spec.homepage      = "https://www.github.com/alphagov/aquae-ruby"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
@@ -41,12 +41,22 @@ Gem::Specification.new do |spec|
   #    "public gem pushes."
   #end
 
-  spec.files         = `git -C "#{File.dirname __FILE__}" ls-files -z`.split("\x0").reject do |f|
-    f.match(%r{^(test|spec|features)/})
-  end
+  ROOT               = '.'
+  spec.files         = [
+    Dir.glob(File.join ROOT, 'bin', '**', '*'),
+    Dir.glob(File.join ROOT, 'lib', '**', '*'),
+    Dir.glob(File.join ROOT, 'tasks', '**', '*'),
+    File.join(ROOT, 'Rakefile'),
+    File.join(ROOT, 'LICENSE'),
+    File.join(ROOT, 'Gemfile'),
+    File.join(ROOT, File.basename(__FILE__))
+  ].flatten
   spec.bindir        = 'bin'
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.executables   = spec.files.grep(%r{bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+  spec.metadata      = {
+    "git-commit" => head
+  }
 
   spec.add_dependency "protobuf", "~> 3.7"
   spec.add_dependency "rgl", "~> 0.5.3"
