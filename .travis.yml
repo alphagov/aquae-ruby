@@ -4,9 +4,16 @@ sudo: required
 services:
 - docker
 
+env:
+  global:
+    - AWS_ACCESS_KEY_ID=AKIAIWRSDO533NY4GO6A
+    - secure: vcR4EXQSgPK8VSFHuJajSVzhEhUyiwr7KUfVdTlkZc5BLXl+S18QMwWqQhurjoT5tVM5GDkgPr/sLjeR8ZCmdio318eTo90/KeZzK+Gok0X45YcKqu6Tr9GFpHQMi7BH7fK4u4G/0z49ek/l4NUUIAxZTO/5sZ00wcLxXAY0M1A/PMYRqgJAN7QzltCCCRuIyhiAPtGGYV1ErUo8dxOzBepPa8RVLz96OWyfPwPiMg+Y11qjR+vnMzW5owVcxkZV2MIJTPfmmNiDMx7nsLncMSClPWsCVssg1a3SKa05bWutoUPMBvCmiDw1R7T0SdhhvrswAnzB6HlVCWa7UqWR2DZokqphVE2OJ+WjNstgLrcDaYR19IVHQ9hxbwFsG09/+qpLnI1pAtUaK16reb9YeqC8ii/094Nih5WH6lhMaIUdVhvVXQTl0A3WdX9lMwNzma7BEgFZD3Hf9KyRv2Qg3ijtlrbMBBlrtMT9Iyff4CyOjD530d+hs6KMXCp8kbS0uc1PtpRSEGw9hfCO1/T35Y81RtF1Qmpat9xrEqksBgJrcvrue1wSRKR51mM5WljMLefMQ6gozI/1LtPrSUXdXytr6vuN+zhugIB/kRrclF7IInUsd6mVmtBNcI4nPTkYGNCmyNUFn5AJpixWlZ1u8j2oJoMugmvfyO4GQ0R+++Q=
+
 before_install: docker build -t aquae-ruby:latest .
 
 script: docker run -v $PWD:/src aquae-ruby:latest /bin/sh -c "cd /src && bundle install && bundle exec rake"
+
+before_deploy: docker run -v $PWD:/src -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY aquae-ruby:latest /bin/sh -c "cd /src && bundle install && rake gems && cp ./pkg/*.gem ./repo/gems && rake repo"
 
 deploy:
 - provider: s3
@@ -15,9 +22,8 @@ deploy:
   access_key_id: AKIAIWRSDO533NY4GO6A
   secret_access_key:
     secure: 3MYjEwP7A2X5hsGuzYetHm2QikC5UBmp06IVxWRnAyjwwXfjZhezhloOjYl14aGbHTcY3YQn0g8p3ZRzO1q4R4wmCRgh+OZKfaQ3L+cbguuU71BOcrZ4ufHVcBl0qewxkcs4HXzYIuSMgALQ5Uov6Ym6hMbLv7imWUUI2usQajlYd4MG520bVUN7UuHSo7Fx3+zC5lIoR1lW7jYuMnLO+URQFFCMDQHjafIfpzUxSbw/BB1jg7FavQRz/op83jLp/x5A+RvTqW6WzYLXXdG9DHqcGWKDYe3rJW8C3AT4eeeJlT4M9btOgDs8mnfWaZCdQsvSwUgQDqaRrqDWteMmjQRo+zsauud3SwqxV7b0Ao+pXyWLHfQv6HVA7LrHCiPqZk7soYFrHcNKx5vAy7myv2Mus3ZSusuoXZC0FU6bVWcTPBjP4F0pb42x581k7+YlYfnzXNdeBJeaBI4NtvvJ93UZS3/pLgVEFdjCKb+M/EvVQIDHoPxn4G/oQkDIjGv4lNVucb9Eeb0pVFc2PSnBbu3e3tSnYy9pdHP2jEx5xFXPyE1mTF7fXRB3by4r2/KwqMmJ/z1X1PPEf8spHkYJYKdxGp6SOYmbglLW3fhswr4/+Oi0HLrVJGE2BnW660HseWAyutazuuDTDpvUVAvj9RjfUfCvQdtP7NLFdJPoioI=
-  local_dir: "./pkg"
-  remote_dir: "./gems"
   acl: public_read
+  local_dir: "./repo"
   skip_cleanup: true
   on:
     all_branches: true
