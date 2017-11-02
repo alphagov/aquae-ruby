@@ -1,0 +1,23 @@
+---
+sudo: required
+
+services:
+- docker
+
+before_install: docker build -t aquae-ruby:latest .
+
+script: docker run -v $PWD:/src aquae-ruby:latest /bin/sh -c "cd /src && bundle install && bundle exec rake"
+
+deploy:
+- provider: s3
+  region: eu-west-2
+  bucket: aquae-ruby
+  access_key_id: AKIAIWRSDO533NY4GO6A
+  secret_access_key:
+    secure: 3MYjEwP7A2X5hsGuzYetHm2QikC5UBmp06IVxWRnAyjwwXfjZhezhloOjYl14aGbHTcY3YQn0g8p3ZRzO1q4R4wmCRgh+OZKfaQ3L+cbguuU71BOcrZ4ufHVcBl0qewxkcs4HXzYIuSMgALQ5Uov6Ym6hMbLv7imWUUI2usQajlYd4MG520bVUN7UuHSo7Fx3+zC5lIoR1lW7jYuMnLO+URQFFCMDQHjafIfpzUxSbw/BB1jg7FavQRz/op83jLp/x5A+RvTqW6WzYLXXdG9DHqcGWKDYe3rJW8C3AT4eeeJlT4M9btOgDs8mnfWaZCdQsvSwUgQDqaRrqDWteMmjQRo+zsauud3SwqxV7b0Ao+pXyWLHfQv6HVA7LrHCiPqZk7soYFrHcNKx5vAy7myv2Mus3ZSusuoXZC0FU6bVWcTPBjP4F0pb42x581k7+YlYfnzXNdeBJeaBI4NtvvJ93UZS3/pLgVEFdjCKb+M/EvVQIDHoPxn4G/oQkDIjGv4lNVucb9Eeb0pVFc2PSnBbu3e3tSnYy9pdHP2jEx5xFXPyE1mTF7fXRB3by4r2/KwqMmJ/z1X1PPEf8spHkYJYKdxGp6SOYmbglLW3fhswr4/+Oi0HLrVJGE2BnW660HseWAyutazuuDTDpvUVAvj9RjfUfCvQdtP7NLFdJPoioI=
+  local_dir: "./pkg"
+  remote_dir: "./gems"
+  acl: public_read
+  skip_cleanup: true
+  on:
+    all_branches: true
