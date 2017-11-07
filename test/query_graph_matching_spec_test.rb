@@ -19,7 +19,7 @@ class QueryGraphMatchingSpecTest < Test::Unit::TestCase
   end
 
   def matching_set_with_surname_disambiguator
-    match_fixture disambiguators: [SURNAME]
+    match_fixture disambiguator: [SURNAME]
   end
 
   def matching_set_with_postcode
@@ -27,11 +27,11 @@ class QueryGraphMatchingSpecTest < Test::Unit::TestCase
   end
 
   def matching_set_with_postcode_disambiguator
-    match_fixture disambiguators: [POSTCODE]
+    match_fixture disambiguator: [POSTCODE]
   end
 
   def matching_set_with_ni_confidence_attribute
-    match_fixture confidenceBuilders: ['NI#']
+    match_fixture confidence: ['NI#']
   end
 
   def question_with_matching
@@ -88,8 +88,8 @@ class QueryGraphMatchingSpecTest < Test::Unit::TestCase
   def assert_matching_spec graph, args
     spec = graph.matching_requirements(graph.root_query)
     assert_equal args[:required] || [], spec.required
-    assert_equal args[:disambiguators] || [], spec.disambiguators
-    assert_equal args[:confidenceBuilders] || [], spec.confidenceBuilders
+    assert_equal args[:disambiguator] || [], spec.disambiguator
+    assert_equal args[:confidence] || [], spec.confidence
   end
 
   test 'returns spec from a single query' do
@@ -105,7 +105,7 @@ class QueryGraphMatchingSpecTest < Test::Unit::TestCase
   end
 
   test 'combines disambiguating specs from multiple child queries' do
-    assert_matching_spec two_required_child_questions_with_disambiguators, disambiguators: [SURNAME, POSTCODE]
+    assert_matching_spec two_required_child_questions_with_disambiguators, disambiguator: [SURNAME, POSTCODE]
   end
 
   test 'multiple common disambiguators are promoted to required' do
@@ -113,6 +113,6 @@ class QueryGraphMatchingSpecTest < Test::Unit::TestCase
   end
 
   test 'multiple common confidence attributes remain as confidence attributes' do
-    assert_matching_spec two_required_child_questions_with_same_confidence_attribute, confidenceBuilders: ['NI#']
+    assert_matching_spec two_required_child_questions_with_same_confidence_attribute, confidence: ['NI#']
   end
 end

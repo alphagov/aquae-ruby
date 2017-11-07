@@ -17,6 +17,8 @@ rule '.proto' => [PROTO_SRC_DIR, 'spec-version.yml'] do
   rake_output_message "tar -xf #{path} #{PROTO_SRC_DIR}"
   Gem::Package::TarReader.new(Zlib::GzipReader.new(open(path, 'rb'))) do |tar|
     tar.each do |tarfile|
+      dir = File.join(PROTO_SRC_DIR, File.dirname(tarfile.full_name))
+      mkdir_p dir if Dir[dir].empty?
       File.binwrite File.join(PROTO_SRC_DIR, tarfile.full_name), tarfile.read
     end
   end

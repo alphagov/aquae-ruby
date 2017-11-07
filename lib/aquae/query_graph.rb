@@ -88,11 +88,11 @@ module Aquae
     # - Any confidence builder present will be present
     def combine_specs *specs
       specs.reduce(Aquae::Metadata::MatchingSpec.new) do |new_spec, old_spec|
-        common_disambiguators = new_spec.disambiguators & old_spec.disambiguators
+        common_disambiguators = new_spec.disambiguator & old_spec.disambiguator
         new_spec.required |= old_spec.required | common_disambiguators
-        new_spec.disambiguators |= old_spec.disambiguators
-        new_spec.disambiguators -= common_disambiguators
-        new_spec.confidenceBuilders |= old_spec.confidenceBuilders
+        new_spec.disambiguator |= old_spec.disambiguator
+        new_spec.disambiguator -= common_disambiguators
+        new_spec.confidence |= old_spec.confidence
         new_spec
       end
     end
