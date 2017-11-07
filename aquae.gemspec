@@ -8,10 +8,10 @@ Gem::Specification.new do |spec|
   # Use this to give the Gem package a unique build number.
   # Make sure we're in the right working-dir before doing this,
   # so the specification is accurate when loaded in other projects.
-  VERSION_TAG = /v\d\.\d+/
+  version_tag = /v\d\.\d+/
   head    = `git -C "#{File.dirname __FILE__}" rev-parse HEAD`.chomp
   release = `git -C "#{File.dirname __FILE__}" tag --points-at HEAD`.split("\n").any? do |tag|
-    tag =~ VERSION_TAG
+    tag =~ version_tag
   end
 
   spec.name          = 'aquae'
@@ -41,15 +41,15 @@ Gem::Specification.new do |spec|
   #    "public gem pushes."
   #end
 
-  ROOT               = '.'
+  root               = '.'
   spec.files         = [
-    Dir.glob(File.join ROOT, 'bin', '**', '*'),
-    Dir.glob(File.join ROOT, 'lib', '**', '*'),
-    Dir.glob(File.join ROOT, 'tasks', '**', '*'),
-    File.join(ROOT, 'Rakefile'),
-    File.join(ROOT, 'LICENSE'),
-    File.join(ROOT, 'Gemfile'),
-    File.join(ROOT, File.basename(__FILE__))
+    Dir.glob(File.join root, 'bin', '**', '*'),
+    Dir.glob(File.join root, 'lib', '**', '*'),
+    Dir.glob(File.join root, 'tasks', '**', '*'),
+    File.join(root, 'Rakefile'),
+    File.join(root, 'LICENSE'),
+    File.join(root, 'Gemfile'),
+    File.join(root, File.basename(__FILE__))
   ].flatten
   spec.bindir        = 'bin'
   spec.executables   = spec.files.grep(%r{bin/}) { |f| File.basename(f) }
