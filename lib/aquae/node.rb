@@ -16,5 +16,9 @@ module Aquae
     attr_reader :location
 
     Location = Struct.new :hostname, :port_number
+
+    def inspect
+      "#<#{self.class}:#{self.object_id} #{name}>"
+    end
   end
 end

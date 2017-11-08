@@ -115,6 +115,10 @@ module Aquae
       # end
     end
 
+    def inspect
+      "#<#{self.class} #{@graph.to_s}>"
+    end
+
     def == other
       other.respond_to?(:graph) && other.respond_to?(:choices) && @graph == other.graph && @choices == other.choices
     end
