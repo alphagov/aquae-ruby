@@ -36,7 +36,7 @@ module Aquae
       @proto.query.each do |query_proto|
         query = @queries[query_proto.name]
         query.choices = Federation::impls_for(query_proto).map do |node, required_queries|
-          Aquae::QuerySpec::Implementation.new @nodes[node.nodeId], query, required_queries.map {|r| @queries[r] }, node.matchingRequirements
+          Aquae::QuerySpec::Implementation.new @nodes[node.name], query, required_queries.map {|r| @queries[r] }, node.matching_requirements
         end
       end
     end
@@ -48,7 +48,7 @@ module Aquae
     end
 
     def self.impls_for query_proto
-      requires = query_proto.choice.empty? ? [[]] : query_proto.choice.map(&:requiredQuery)
+      requires = query_proto.choice.empty? ? [[]] : query_proto.choice.map(&:required_query)
       query_proto.node.product requires
     end
   end
