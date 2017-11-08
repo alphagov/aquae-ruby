@@ -3,3 +3,5 @@
 /_yardoc/
 /Gemfile.lock
 *.pb.rb
+/pkg
+/build
