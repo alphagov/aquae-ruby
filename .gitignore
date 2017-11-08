@@ -5,3 +5,4 @@
 *.pb.rb
 /pkg
 /build
+/test/reports

@@ -1,4 +1,5 @@
 require 'rake/testtask'
+require 'ci/reporter/rake/test_unit'
 
 Rake::TestTask.new do |t|
   t.name = :test
@@ -6,3 +7,5 @@ Rake::TestTask.new do |t|
   t.options = '"--no-show_detail_immediately"'
   t.warning = false
 end
+
+task :test => :'ci:setup:testunit'
